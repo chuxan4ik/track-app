@@ -1,0 +1,47 @@
+{% extends "base" %}
+{% block content %}
+<h1>Доставка №{{ delivery.id }}</h1>
+<p><strong>Трек-номер:</strong> {{ delivery.tracking_number }}</p>
+<p><strong>Описание:</strong> {{ delivery.description }}</p>
+<p><strong>Отправитель:</strong> {{ delivery.sender }}</p>
+<p><strong>Получатель:</strong> {{ delivery.recipient }}</p>
+<p><strong>Текущий статус:</strong> <span id="current-status">{{ delivery.current_status }}</span></p>
+
+<h2>Изменить статус</h2>
+<select id="status-select">
+    <option value="Создана">Создана</option>
+    <option value="Принята">Принята</option>
+    <option value="В пути">В пути</option>
+    <option value="Доставлена">Доставлена</option>
+    <option value="Возврат">Возврат</option>
+</select>
+<button id="update-status">Обновить статус</button>
+
+<h2>История статусов</h2>
+<table>
+    <thead><tr><th>Статус</th><th>Время</th></tr></thead>
+    <tbody>
+        {% for h in history %}
+        <tr><td>{{ h.status }}</td><td>{{ h.changed_at }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    document.getElementById('update-status').addEventListener('click', async () => {
+        const newStatus = document.getElementById('status-select').value;
+        const response = await fetch(`/api/deliveries/{{ delivery.id }}/status`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: newStatus})
+        });
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('current-status').innerText = data.current_status;
+            location.reload();
+        } else {
+            alert('Ошибка обновления статуса');
+        }
+    });
+</script>
+{% endblock %}

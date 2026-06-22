@@ -1,0 +1,43 @@
+{% extends "base" %}
+{% block content %}
+<h1>Отслеживание доставок</h1>
+<form id="create-form">
+    <input type="text" name="tracking_number" placeholder="Трек-номер (опционально)">
+    <input type="text" name="description" placeholder="Описание" required>
+    <input type="text" name="sender" placeholder="Отправитель" required>
+    <input type="text" name="recipient" placeholder="Получатель" required>
+    <button type="submit">Создать доставку</button>
+</form>
+
+<h2>Список доставок</h2>
+<table id="deliveries-table">
+    <thead>
+        <tr><th>Трек-номер</th><th>Описание</th><th>Статус</th><th>Действия</th></tr>
+    </thead>
+    <tbody>
+        {% for delivery in deliveries %}
+        <tr>
+            <td>{{ delivery.tracking_number }}</td>
+            <td>{{ delivery.description }}</td>
+            <td>{{ delivery.current_status }}</td>
+            <td><a href="/delivery/{{ delivery.id }}">Подробнее</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    document.getElementById('create-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        const response = await fetch('/api/deliveries', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        if (response.ok) location.reload();
+        else alert('Ошибка при создании');
+    });
+</script>
+{% endblock %}
